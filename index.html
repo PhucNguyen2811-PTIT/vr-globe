@@ -1,8 +1,9 @@
 <!doctype html>
 <html>
   <head>
-    <title>PTIT - VR Globe Final</title>
+    <title>PTIT - VR Interactive Globe</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
     <a-scene>
@@ -23,10 +24,11 @@
 
       <a-sphere
         id="earth-object"
+        class="clickable"
         position="0 1.5 -4"
         radius="1.2"
         src="#earth-texture"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 25000; easing: linear"
       >
       </a-sphere>
 
@@ -34,11 +36,35 @@
       <a-light type="directional" position="-1 1 1" intensity="0.8"></a-light>
 
       <a-entity id="rig" position="0 0 0">
-        <a-camera id="camera" look-controls position="0 1.6 0"></a-camera>
+        <a-camera look-controls position="0 1.6 0"></a-camera>
 
-        <a-entity laser-controls="hand: left"></a-entity>
-        <a-entity laser-controls="hand: right"></a-entity>
+        <a-entity
+          laser-controls="hand: left"
+          raycaster="objects: .clickable; far: 10; interval: 100"
+        >
+        </a-entity>
+
+        <a-entity
+          laser-controls="hand: right"
+          raycaster="objects: .clickable; far: 10; interval: 100"
+        >
+        </a-entity>
       </a-entity>
     </a-scene>
+
+    <script>
+      const earth = document.querySelector("#earth-object");
+
+      // Ví dụ: Khi tia laser chỉ vào quả cầu và nhấn nút Trigger (cò)
+      earth.addEventListener("mousedown", function () {
+        // Tạm dừng hoặc tiếp tục xoay khi click
+        const currentAnimation = earth.getAttribute("animation");
+        if (currentAnimation.dur === 0) {
+          earth.setAttribute("animation", "dur", 25000); // Chạy lại
+        } else {
+          earth.setAttribute("animation", "dur", 0); // Dừng lại
+        }
+      });
+    </script>
   </body>
 </html>
