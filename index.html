@@ -1,9 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <title>Interactive Globe - Auto & Manual Rotate</title>
+    <title>PTIT - VR Globe Final</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js"></script>
   </head>
   <body>
     <a-scene>
@@ -27,28 +26,18 @@
         position="0 1.5 -4"
         radius="1.2"
         src="#earth-texture"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
       >
       </a-sphere>
 
       <a-light type="ambient" color="#fff"></a-light>
       <a-light type="directional" position="-1 1 1" intensity="0.8"></a-light>
 
-      <a-entity
-        id="camera"
-        camera
-        orbit-controls="
-          target: 0 1.5 -4;      
-          initialPosition: 0 1.5 2;
-          minDistance: 2;
-          maxDistance: 10;
-          rotateSpeed: 2;
-          enablePan: false;
-          autoRotate: true;           /* Tự động xoay */
-          autoRotateSpeed: 0.1;       /* Tốc độ tự xoay (tăng giảm tùy ý) */
-          enableDamping: true;        /* Giúp xoay chuột có độ mượt/quán tính */
-          dampingFactor: 0.1;
-        "
-      >
+      <a-entity id="rig" position="0 0 0">
+        <a-camera id="camera" look-controls position="0 1.6 0"></a-camera>
+
+        <a-entity laser-controls="hand: left"></a-entity>
+        <a-entity laser-controls="hand: right"></a-entity>
       </a-entity>
     </a-scene>
   </body>
