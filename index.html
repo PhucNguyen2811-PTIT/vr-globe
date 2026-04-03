@@ -50,20 +50,30 @@
     </a-scene>
 
     <script>
-      const earth = document.querySelector("#earth-object");
-      let isRotating = true; // Biến để theo dõi trạng thái đang xoay hay đang dừng
+      // Đảm bảo Scene đã load xong mới chạy Script
+      document.querySelector("a-scene").addEventListener("loaded", function () {
+        const earth = document.querySelector("#earth-object");
+        let isRotating = true;
 
-      // Lắng nghe sự kiện click từ tay cầm VR (trigger) hoặc chuột
-      earth.addEventListener("mousedown", function () {
-        if (isRotating) {
-          // Lệnh tạm dừng animation của A-Frame
-          earth.components.animation.pause();
-          isRotating = false;
-        } else {
-          // Lệnh chạy tiếp animation từ vị trí đã dừng
-          earth.components.animation.play();
-          isRotating = true;
-        }
+        // Lắng nghe cả sự kiện mousedown (cho tay cầm VR) và click (cho chuột máy tính)
+        earth.addEventListener("mousedown", function (evt) {
+          // Truy cập trực tiếp vào component animation của A-Frame
+          const anim = earth.components.animation;
+
+          if (anim) {
+            if (isRotating) {
+              // Lệnh PAUSE: Dừng ngay tại vị trí hiện tại, không bị nhảy
+              anim.pause();
+              isRotating = false;
+              console.log("Đã dừng");
+            } else {
+              // Lệnh PLAY: Chạy tiếp từ vị trí đang đứng
+              anim.play();
+              isRotating = true;
+              console.log("Chạy tiếp");
+            }
+          }
+        });
       });
     </script>
   </body>
