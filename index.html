@@ -50,30 +50,53 @@
     </a-scene>
 
     <script>
-      // Đảm bảo Scene đã load xong mới chạy Script
       document.querySelector("a-scene").addEventListener("loaded", function () {
         const earth = document.querySelector("#earth-object");
         let isRotating = true;
+        let rotationSpeed = 0; // Tốc độ xoay do cần gạt điều khiển
 
-        // Lắng nghe cả sự kiện mousedown (cho tay cầm VR) và click (cho chuột máy tính)
-        earth.addEventListener("mousedown", function (evt) {
-          // Truy cập trực tiếp vào component animation của A-Frame
-          const anim = earth.components.animation;
-
-          if (anim) {
-            if (isRotating) {
-              // Lệnh PAUSE: Dừng ngay tại vị trí hiện tại, không bị nhảy
-              anim.pause();
-              isRotating = false;
-              console.log("Đã dừng");
-            } else {
-              // Lệnh PLAY: Chạy tiếp từ vị trí đang đứng
-              anim.play();
-              isRotating = true;
-              console.log("Chạy tiếp");
-            }
+        // 1. CLICK ĐỂ DỪNG/CHẠY (GIỮ NGUYÊN)
+        earth.addEventListener("mousedown", function () {
+          if (isRotating) {
+            earth.components.animation.pause();
+            isRotating = false;
+          } else {
+            earth.components.animation.play();
+            isRotating = true;
           }
         });
+
+        // 2. LẮNG NGHE CẦN GẠT (JOYSTICK)
+        const controllers = document.querySelectorAll("[laser-controls]");
+
+        controllers.forEach((controller) => {
+          controller.addEventListener("axismove", function (evt) {
+            // evt.detail.axis[0] là trục ngang của cần gạt (Trái: -1, Phải: 1)
+            const joystickX = evt.detail.axis[0];
+
+            if (Math.abs(joystickX) > 0.1) {
+              // Nếu gạt đủ mạnh
+              rotationSpeed = joystickX * 2; // Điều chỉnh số 2 để tăng/giảm tốc độ xoay
+              isRotating = false; // Tạm dừng auto-rotate khi đang điều khiển tay
+              earth.components.animation.pause();
+            } else {
+              rotationSpeed = 0;
+            }
+          });
+        });
+
+        // 3. VÒNG LẶP CẬP NHẬT (Tạo chuyển động mượt mà)
+        function tick() {
+          if (rotationSpeed !== 0) {
+            // Lấy góc xoay hiện tại
+            let currentRotation = earth.getAttribute("rotation");
+            // Cộng thêm góc mới dựa trên cần gạt
+            currentRotation.y += rotationSpeed;
+            earth.setAttribute("rotation", currentRotation);
+          }
+          requestAnimationFrame(tick);
+        }
+        tick();
       });
     </script>
   </body>
