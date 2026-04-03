@@ -52,48 +52,49 @@
     <script>
       document.querySelector("a-scene").addEventListener("loaded", function () {
         const earth = document.querySelector("#earth-object");
-        const leftHand = document.querySelector(
-          '[laser-controls="hand: left"]',
-        );
-        const rightHand = document.querySelector(
-          '[laser-controls="hand: right"]',
-        );
-
         let isAutoRotating = true;
+        let manualRotationY = 0;
 
-        // 1. CLICK ĐỂ DỪNG/CHẠY TỰ ĐỘNG
+        // 1. CLICK CHUỘT / TRIGGER TAY CẦM (Dừng/Chạy)
         earth.addEventListener("mousedown", function () {
           isAutoRotating = !isAutoRotating;
           if (isAutoRotating) earth.components.animation.play();
           else earth.components.animation.pause();
         });
 
-        // 2. HÀM CẬP NHẬT LIÊN TỤC (TICK)
+        // 2. TEST BẰNG PHÍM MŨI TÊN (Giả lập cần gạt trên máy tính)
+        window.addEventListener("keydown", (e) => {
+          let rot = earth.getAttribute("rotation");
+          if (e.key === "ArrowLeft") {
+            isAutoRotating = false;
+            earth.components.animation.pause();
+            rot.y -= 5;
+            earth.setAttribute("rotation", rot);
+          }
+          if (e.key === "ArrowRight") {
+            isAutoRotating = false;
+            earth.components.animation.pause();
+            rot.y += 5;
+            earth.setAttribute("rotation", rot);
+          }
+        });
+
+        // 3. HÀM CẬP NHẬT CHO TAY CẦM VR THẬT (TICK)
         function update() {
-          // Kiểm tra cả 2 tay cầm xem có cái nào đang gạt cần không
-          [leftHand, rightHand].forEach((controller) => {
-            const gamepad =
-              controller.components["laser-controls"].index !== undefined
-                ? navigator.getGamepads()[
-                    controller.components["laser-controls"].index
-                  ]
-                : null;
-
-            if (gamepad && gamepad.axes) {
-              // Trục 2 hoặc 3 thường là Joystick ngang trên các dòng kính VR hiện nay
-              const joystickX = gamepad.axes[2] || gamepad.axes[0];
-
-              if (Math.abs(joystickX) > 0.1) {
+          const gamepads = navigator.getGamepads();
+          for (const gp of gamepads) {
+            if (gp && gp.axes) {
+              // Trục 2 hoặc 0 tùy loại kính
+              let axisX = gp.axes[2] || gp.axes[0];
+              if (Math.abs(axisX) > 0.1) {
                 isAutoRotating = false;
                 earth.components.animation.pause();
-
-                // Xoay quả cầu dựa trên độ gạt của cần
-                let rotation = earth.getAttribute("rotation");
-                rotation.y -= joystickX * 3; // Số 3 là tốc độ xoay tay
-                earth.setAttribute("rotation", rotation);
+                let rot = earth.getAttribute("rotation");
+                rot.y += axisX * 2; // Tốc độ xoay
+                earth.setAttribute("rotation", rot);
               }
             }
-          });
+          }
           requestAnimationFrame(update);
         }
         update();
