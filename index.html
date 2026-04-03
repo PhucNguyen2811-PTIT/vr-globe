@@ -41,28 +41,28 @@
         <a-entity
           laser-controls="hand: left"
           raycaster="objects: .clickable; far: 10; interval: 100"
-        >
-        </a-entity>
-
+        ></a-entity>
         <a-entity
           laser-controls="hand: right"
           raycaster="objects: .clickable; far: 10; interval: 100"
-        >
-        </a-entity>
+        ></a-entity>
       </a-entity>
     </a-scene>
 
     <script>
       const earth = document.querySelector("#earth-object");
+      let isRotating = true; // Biến để theo dõi trạng thái đang xoay hay đang dừng
 
-      // Ví dụ: Khi tia laser chỉ vào quả cầu và nhấn nút Trigger (cò)
+      // Lắng nghe sự kiện click từ tay cầm VR (trigger) hoặc chuột
       earth.addEventListener("mousedown", function () {
-        // Tạm dừng hoặc tiếp tục xoay khi click
-        const currentAnimation = earth.getAttribute("animation");
-        if (currentAnimation.dur === 0) {
-          earth.setAttribute("animation", "dur", 25000); // Chạy lại
+        if (isRotating) {
+          // Lệnh tạm dừng animation của A-Frame
+          earth.components.animation.pause();
+          isRotating = false;
         } else {
-          earth.setAttribute("animation", "dur", 0); // Dừng lại
+          // Lệnh chạy tiếp animation từ vị trí đã dừng
+          earth.components.animation.play();
+          isRotating = true;
         }
       });
     </script>
