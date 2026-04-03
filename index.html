@@ -52,51 +52,51 @@
     <script>
       document.querySelector("a-scene").addEventListener("loaded", function () {
         const earth = document.querySelector("#earth-object");
-        let isRotating = true;
-        let rotationSpeed = 0; // Tốc độ xoay do cần gạt điều khiển
+        const leftHand = document.querySelector(
+          '[laser-controls="hand: left"]',
+        );
+        const rightHand = document.querySelector(
+          '[laser-controls="hand: right"]',
+        );
 
-        // 1. CLICK ĐỂ DỪNG/CHẠY (GIỮ NGUYÊN)
+        let isAutoRotating = true;
+
+        // 1. CLICK ĐỂ DỪNG/CHẠY TỰ ĐỘNG
         earth.addEventListener("mousedown", function () {
-          if (isRotating) {
-            earth.components.animation.pause();
-            isRotating = false;
-          } else {
-            earth.components.animation.play();
-            isRotating = true;
-          }
+          isAutoRotating = !isAutoRotating;
+          if (isAutoRotating) earth.components.animation.play();
+          else earth.components.animation.pause();
         });
 
-        // 2. LẮNG NGHE CẦN GẠT (JOYSTICK)
-        const controllers = document.querySelectorAll("[laser-controls]");
+        // 2. HÀM CẬP NHẬT LIÊN TỤC (TICK)
+        function update() {
+          // Kiểm tra cả 2 tay cầm xem có cái nào đang gạt cần không
+          [leftHand, rightHand].forEach((controller) => {
+            const gamepad =
+              controller.components["laser-controls"].index !== undefined
+                ? navigator.getGamepads()[
+                    controller.components["laser-controls"].index
+                  ]
+                : null;
 
-        controllers.forEach((controller) => {
-          controller.addEventListener("axismove", function (evt) {
-            // evt.detail.axis[0] là trục ngang của cần gạt (Trái: -1, Phải: 1)
-            const joystickX = evt.detail.axis[0];
+            if (gamepad && gamepad.axes) {
+              // Trục 2 hoặc 3 thường là Joystick ngang trên các dòng kính VR hiện nay
+              const joystickX = gamepad.axes[2] || gamepad.axes[0];
 
-            if (Math.abs(joystickX) > 0.1) {
-              // Nếu gạt đủ mạnh
-              rotationSpeed = joystickX * 2; // Điều chỉnh số 2 để tăng/giảm tốc độ xoay
-              isRotating = false; // Tạm dừng auto-rotate khi đang điều khiển tay
-              earth.components.animation.pause();
-            } else {
-              rotationSpeed = 0;
+              if (Math.abs(joystickX) > 0.1) {
+                isAutoRotating = false;
+                earth.components.animation.pause();
+
+                // Xoay quả cầu dựa trên độ gạt của cần
+                let rotation = earth.getAttribute("rotation");
+                rotation.y -= joystickX * 3; // Số 3 là tốc độ xoay tay
+                earth.setAttribute("rotation", rotation);
+              }
             }
           });
-        });
-
-        // 3. VÒNG LẶP CẬP NHẬT (Tạo chuyển động mượt mà)
-        function tick() {
-          if (rotationSpeed !== 0) {
-            // Lấy góc xoay hiện tại
-            let currentRotation = earth.getAttribute("rotation");
-            // Cộng thêm góc mới dựa trên cần gạt
-            currentRotation.y += rotationSpeed;
-            earth.setAttribute("rotation", currentRotation);
-          }
-          requestAnimationFrame(tick);
+          requestAnimationFrame(update);
         }
-        tick();
+        update();
       });
     </script>
   </body>
